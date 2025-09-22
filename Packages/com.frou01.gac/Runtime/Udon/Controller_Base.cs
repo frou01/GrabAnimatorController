@@ -86,8 +86,8 @@ public class Controller_Base : UdonSharpBehaviour
     bool hasSegmentArray;
     protected VRCPlayerApi.TrackingData trackingData;
 
-    [System.NonSerialized]public bool locked = false;
-    [System.NonSerialized]public bool lockedSegment = false;
+    [System.NonSerialized] public bool locked = false;
+    [System.NonSerialized] public bool lockedSegment = false;
     [System.NonSerialized] public bool lockedSegment_Dec = false;
     [System.NonSerialized] public bool lockedSegment_Inc = false;
 
