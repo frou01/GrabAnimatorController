@@ -28,7 +28,7 @@ public class Controller_Base : UdonSharpBehaviour
     public float[] snap_points;
 
     [SerializeField] bool UseEvent = false;
-    public string[] SendingEvent;
+    [Tooltip("set event per every segment")]public string[] SendingEvent;
     [SerializeField] UdonBehaviour[] eventReceivers;
 
     public bool useHaptic;
@@ -62,9 +62,11 @@ public class Controller_Base : UdonSharpBehaviour
 
 
     [UdonSynced] public int currentSegment;
+    public int[] currentSegment_Exposed = new int[1];
     int prevSegment;
 
     [UdonSynced] float currentNormalizePosition;
+    public float[] currentNormalizePosition_Exposed = new float[1];
     float prevNormalizePosition;
 
     float SyncedControllerPosition;
@@ -72,6 +74,7 @@ public class Controller_Base : UdonSharpBehaviour
     [Header("VRC上でもアニメーターからの変更で回転させることができます")]
     [Header("デバッグ時はアニメーターの(設定名)_rotationを変更することで確認できます")]
     [UdonSynced(UdonSyncMode.Linear)] public float controllerPosition;
+    public float[] controllerPosition_Exposed = new float[1];
     float prevControllerPosition;
 
     private bool isAnimatorControllPosition;
@@ -222,6 +225,8 @@ public class Controller_Base : UdonSharpBehaviour
                     controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
                 }
             }
+            if (controllerPosition_Exposed[0] != prevControllerPosition)
+                controllerPosition = controllerPosition_Exposed[0];
             if (netWork_Updating) SinceLastRequest += Time.deltaTime;
             if (SinceLastRequest > SyncInterval)
             {
@@ -243,6 +248,8 @@ public class Controller_Base : UdonSharpBehaviour
                     controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
                 }
             }
+            if (controllerPosition_Exposed[0] != prevControllerPosition)
+                controllerPosition = controllerPosition_Exposed[0];
         }
         positionUpdated = prevControllerPosition != controllerPosition;
         if (positionUpdated || currentSegment != prevSegment)
@@ -285,6 +292,10 @@ public class Controller_Base : UdonSharpBehaviour
         prevControllerPosition = controllerPosition;
         cachedTransform.localPosition = originPos;
         transform.localRotation = originRot;
+
+        controllerPosition_Exposed[0] = controllerPosition;
+        currentSegment_Exposed[0] = currentSegment;
+        currentNormalizePosition_Exposed[0] = currentNormalizePosition;
 
         if ((!isPicked || !isowner) && autoDisable) fromActiveTime += Time.deltaTime;
         if (autoDisable && !isPicked && fromActiveTime > autoDisableTime) disableThis();
@@ -439,6 +450,10 @@ public class Controller_Base : UdonSharpBehaviour
             foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
         }
         ApplyToTransform();
+
+        controllerPosition_Exposed[0] = controllerPosition;
+        currentSegment_Exposed[0] = currentSegment;
+        currentNormalizePosition_Exposed[0] = currentNormalizePosition;
     }
     protected virtual void onPicked()
     {
