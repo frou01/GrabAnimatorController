@@ -120,60 +120,12 @@ public class Controller_Base : UdonSharpBehaviour
         }
 
         hasSegmentArray = segment_points.Length >= 2;
-        if (hasSegmentArray)
-        {
-            float leverPosition_temp = controllerPosition;
-            prevNormalizePosition = currentNormalizePosition;
-            if (segment_points[currentSegment] > leverPosition_temp)
-            {
-                if (currentSegment > 0)
-                {
-                    if (isowner) currentSegment--;
-                }
-                else
-                {
-                    leverPosition_temp = segment_points[currentSegment];
-                }
-            }
-            if (segment_points[currentSegment + 1] < leverPosition_temp)
-            {
-                if (currentSegment + 2 < segment_points.Length)
-                {
-                    if (isowner) currentSegment++;
-                }
-                else
-                {
-                    leverPosition_temp = segment_points[currentSegment + 1];
-                }
-            }
-            foreach(float snap_point in snap_points)
-            {
-                if(segment_points[currentSegment] <= snap_point && snap_point <= segment_points[currentSegment + 1])
-                {
-                    leverPosition_temp = snap_point;
-                }
-            }
-            currentNormalizePosition = (leverPosition_temp - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
-            if (UseAnimator)
-            {
-                if (hasNormalizedPosition)
-                {
-                    TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                    Local_isUpdated = true;
-                }
-                if (hasSegments)
-                {
-                    TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
-                    Local_isUpdated = true;
-                }
-            }
-            if (isowner) controllerPosition = leverPosition_temp;
-        }
+        SetPosition(controllerPosition);
         autoDisable &= ForceAutoDisable || !isAnimatorControllPosition;
         if (autoDisable) disableThis();
         prevSegment = currentSegment;
+        prevControllerPosition = controllerPosition;
+        prevNormalizePosition = currentNormalizePosition;
         isowner = Networking.IsOwner(gameObject);
         ApplyToTransform();
     }
@@ -384,10 +336,6 @@ public class Controller_Base : UdonSharpBehaviour
 
     public void SetPosition(float target)
     {
-        if (Networking.IsOwner(gameObject))
-        {
-            Networking.SetOwner(Networking.LocalPlayer, gameObject);
-        }
         controllerPosition = target;
         if (hasSegmentArray)
         {
@@ -398,19 +346,27 @@ public class Controller_Base : UdonSharpBehaviour
                 {
                     if (currentSegment > 0)
                     {
-                        if (isowner) currentSegment--;
+                        currentSegment--;
                     }
                     else
                     {
                         controllerPosition = segment_points[currentSegment];
                         break;
                     }
-                }else
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true)
+            {
+
                 if (segment_points[currentSegment + 1] < controllerPosition)
                 {
                     if (currentSegment + 2 < segment_points.Length)
                     {
-                        if (isowner) currentSegment++;
+                        currentSegment++;
                     }
                     else
                     {
@@ -423,28 +379,27 @@ public class Controller_Base : UdonSharpBehaviour
                     break;
                 }
             }
+            //上探索と下探索を分離して振動=無限ループを回避
 
             currentNormalizePosition = (controllerPosition - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
             if (UseAnimator)
             {
-                if (currentNormalizePosition != prevNormalizePosition && hasNormalizedPosition)
+                if (hasNormalizedPosition)
                 {
                     TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
                     Local_isUpdated = true;
                 }
-                if (currentSegment != prevSegment && hasSegments)
+                if (hasSegments)
                 {
                     TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
                     Local_isUpdated = true;
                 }
             }
-            prevSegment = currentSegment;
-            prevControllerPosition = controllerPosition;
         }
 
-        if (UseAnimator && !isAnimatorControllPosition && positionUpdated && hasPosition)
+        if (UseAnimator && !isAnimatorControllPosition && hasPosition)
         {
             TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
             foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
