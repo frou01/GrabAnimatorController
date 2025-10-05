@@ -23,6 +23,8 @@ namespace frou01.GrabController
         [Header("デバッグ時はこちらを変更してください")]
         [Header("アニメーターから制御する際はレバーのパラメータを変更するようにしてください")]
         [UdonSynced(UdonSyncMode.Linear)] [SerializeField] float screwRotation;
+
+        public float[] normScrewPosition = new float[1];
         private int ScrewParamaterID;
         private int HandleParamaterID;
         private float prevLeverRotation;
@@ -71,7 +73,8 @@ namespace frou01.GrabController
                     screwRotation = MAX;
                 }
             }
-            TargetAnimator.SetFloat(ScrewParamaterID, (screwRotation - min) / range);
+            normScrewPosition[0] = (screwRotation - min) / range;
+            TargetAnimator.SetFloat(ScrewParamaterID, normScrewPosition[0]);
             TargetAnimator.SetFloat(HandleParamaterID, wrapAngleTo180(screwRotation));
             controllerTransform.localRotation = Quaternion.identity;
             controllerTransform.Rotate(0, screwRotation, 0);
