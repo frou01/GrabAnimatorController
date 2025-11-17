@@ -94,7 +94,7 @@ public class Controller_Base : UdonSharpBehaviour
     [System.NonSerialized] public bool lockedSegment_Dec = false;
     [System.NonSerialized] public bool lockedSegment_Inc = false;
 
-    void Start()
+    protected virtual void Start()
     {
         cachedTransform = transform;
         localPlayer = Networking.LocalPlayer;
@@ -152,11 +152,11 @@ public class Controller_Base : UdonSharpBehaviour
         RequestSerialization();
     }
 
-    public void Update()
+    public virtual void Update()
     {
         cachedTransform.localPosition = originPos;
     }
-    public void LateUpdate()
+    public virtual void LateUpdate()
     {
         //if (localPlayer == null) return;
 
