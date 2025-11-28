@@ -59,7 +59,7 @@ namespace frou01.GrabController
         {
         }
 
-        void OnDrawGizmosSelected()
+        protected virtual void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1, 1, 1);
             if(segment_points.Length > 0)
