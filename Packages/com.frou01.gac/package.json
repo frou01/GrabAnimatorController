@@ -7,7 +7,7 @@
   "vpmDependencies": {
     "com.vrchat.worlds": ">=3.7.4"
   },
-	"url" : "https://github.com/frou01/GrabAnimatorController.git#vpm",
+	"documentationUrl" : "https://github.com/frou01/GrabAnimatorController.git",
   "author": {
     "name": "frou01",
     "email": "frou01stg44hurutaka@gmail.com"
