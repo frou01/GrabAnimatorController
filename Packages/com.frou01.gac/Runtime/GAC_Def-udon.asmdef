@@ -1,5 +1,6 @@
 {
     "name": "GAC_Def-udon",
+    "rootNamespace": "frou01.GrabController",
     "references": [
         "VRC.Udon",
         "UdonSharp.Runtime"

@@ -55,12 +55,11 @@ namespace frou01.GrabController
         {
             controllerTransform.Translate(0, controllerPosition - controllerTransform.localPosition.y , 0);
         }
-        void OnDrawGizmos()
-        {
-        }
 
-        protected virtual void OnDrawGizmosSelected()
+#if !COMPILER_UDONSHARP
+        protected override void OnDrawGizmosSelected()
         {
+            base.OnDrawGizmosSelected();
             Gizmos.color = new Color(1, 1, 1);
             if(segment_points.Length > 0)
             {
@@ -82,5 +81,6 @@ namespace frou01.GrabController
                 Gizmos.DrawLine(controllerTransform.position + controllerTransform.parent.rotation * new Vector3(0, snap_point, -0.1f)
                     , controllerTransform.position + controllerTransform.parent.rotation * new Vector3(0, snap_point,0.1f));
         }
+#endif
     }
 }
