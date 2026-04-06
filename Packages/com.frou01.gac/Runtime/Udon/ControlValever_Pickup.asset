@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
-  m_Name: ControllerSlider_Pickup Udon C# Program Asset
+  m_Name: ControlValever_Pickup
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 9916ce094c7e13945b1e095dde7cb26a, type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 66652c37d142d2646be8e3f8b3e26dba, type: 2}
   udonAssembly: 
   assemblyError: 
-  sourceCsScript: {fileID: 11500000, guid: 272ccf77f50e36340bcd5410f21b4e77, type: 3}
+  sourceCsScript: {fileID: 11500000, guid: 9118424dbc886004981382da4865bf53, type: 3}
   scriptVersion: 2
   compiledVersion: 2
   behaviourSyncMode: 0
   hasInteractEvent: 1
-  scriptID: 1137492425566735324
+  scriptID: -4842873533121630764
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
