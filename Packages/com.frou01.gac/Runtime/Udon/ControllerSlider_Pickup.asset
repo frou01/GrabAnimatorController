@@ -10,18 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
-  m_Name: ControlValve Udon C# Program Asset
+  m_Name: ControllerSlider_Pickup
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8a8b93086e1678d4e94d6a85a9155a92,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 9916ce094c7e13945b1e095dde7cb26a, type: 2}
   udonAssembly: 
   assemblyError: 
-  sourceCsScript: {fileID: 11500000, guid: 7c3ff7e5da4d6b54b94fa0d2b58ce8e3, type: 3}
+  sourceCsScript: {fileID: 11500000, guid: 272ccf77f50e36340bcd5410f21b4e77, type: 3}
   scriptVersion: 2
   compiledVersion: 2
   behaviourSyncMode: 0
   hasInteractEvent: 1
-  scriptID: -744879754149417129
+  scriptID: 1137492425566735324
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
