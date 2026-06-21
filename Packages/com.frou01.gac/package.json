@@ -1,7 +1,7 @@
 {
   "name": "com.frou01.gac",
   "displayName": "frou01.Grab Animator Controller",
-  "version": "8.0.0-pre1.0",
+  "version": "8.0.0",
   "unity": "2022.3",
   "description": "Grabbing Animator controller for VRChat",
   "vpmDependencies": {
