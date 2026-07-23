@@ -83,6 +83,7 @@ namespace frou01.GrabController
         private bool isAnimatorControllPosition;
 
         protected bool netWork_Updating;
+        [HideInInspector]public bool NoneSyncMode;
         private float SyncInterval = 10;
         private float SinceLastRequest;
 
@@ -124,7 +125,14 @@ namespace frou01.GrabController
             prevSegment = currentSegment;
             prevControllerPosition = controllerPosition;
             prevNormalizePosition = currentNormalizePosition;
-            isowner = Networking.IsOwner(gameObject);
+            if (!NoneSyncMode)
+            {
+                isowner = Networking.IsOwner(gameObject);
+            }
+            else
+            {
+                isowner = true;
+            }
             ApplyToTransform();
         }
         static bool HasParameter(int paramHash, Animator animator)
@@ -181,7 +189,6 @@ namespace frou01.GrabController
                 if (SinceLastRequest > SyncInterval)
                 {
                     SinceLastRequest = 0;
-                    netWork_Updating = false;
                     RequestSerialization();
                 }
             }
@@ -333,7 +340,7 @@ namespace frou01.GrabController
 
         private void disableThis()
         {
-            this.enabled = false;
+            if(!netWork_Updating)this.enabled = false;
             fromActiveTime = 0;
         }
 
@@ -365,6 +372,7 @@ namespace frou01.GrabController
         }
         public override void OnPreSerialization()
         {
+            netWork_Updating = false;
             SyncedControllerPosition = controllerPosition;
         }
         public override void OnDeserialization()
@@ -376,8 +384,15 @@ namespace frou01.GrabController
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {
-            isowner = Networking.IsOwner(gameObject);
-            this.OnDrop();
+            if (!NoneSyncMode)
+            {
+                isowner = Networking.IsOwner(gameObject);
+                this.OnDrop();
+            }
+            else
+            {
+                isowner = true;
+            }
         }
 #if !COMPILER_UDONSHARP
         protected virtual void OnDrawGizmos()
