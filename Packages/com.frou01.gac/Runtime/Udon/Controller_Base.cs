@@ -286,9 +286,10 @@ namespace frou01.GrabController
                             }
                         }
                     }
-                    currentNormalizePosition = (controllerPosition - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
 
                     controllerPosition = leverPosition_temp;
+                    currentNormalizePosition = (controllerPosition - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
+
                 }
                 controllerPosition_Exposed[0] = controllerPosition;
                 currentSegment_Exposed[0] = currentSegment;
