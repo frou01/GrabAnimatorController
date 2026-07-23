@@ -204,7 +204,7 @@ namespace frou01.GrabController
             positionUpdated = prevControllerPosition != controllerPosition;
             if (positionUpdated)
             {
-                CheckSegmentAndUpdate();
+                CheckSegmentAndUpdate(false);
             }
 
             DataUpdateSend();
@@ -216,52 +216,56 @@ namespace frou01.GrabController
             if (autoDisable && !isPicked && fromActiveTime > autoDisableTime) disableThis();
         }
 
-        private void CheckSegmentAndUpdate()
+        private void CheckSegmentAndUpdate(bool ignoreLock)
         {
             if (hasSegmentArray)
             {
                 float leverPosition_temp = controllerPosition;
                 prevNormalizePosition = currentNormalizePosition;
 
-                //上探索と下探索を分離して振動=無限ループを回避
-                while (true)
+                if (!lockedSegment || ignoreLock)
                 {
-                    if (segment_points[currentSegment] > leverPosition_temp)
-                    {
-                        if (currentSegment > 0)
+                    //上探索と下探索を分離して振動=無限ループを回避
+                    if (!lockedSegment_Inc || ignoreLock)
+                        while (true)
                         {
-                            currentSegment--;
+                            if (segment_points[currentSegment] > leverPosition_temp)
+                            {
+                                if (currentSegment > 0)
+                                {
+                                    currentSegment--;
+                                }
+                                else
+                                {
+                                    leverPosition_temp = segment_points[currentSegment];
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
+                    if (!lockedSegment_Dec || ignoreLock)
+                        while (true)
                         {
-                            leverPosition_temp = segment_points[currentSegment];
-                            break;
+                            if (segment_points[currentSegment + 1] < leverPosition_temp)
+                            {
+                                if (currentSegment + 2 < segment_points.Length)
+                                {
+                                    currentSegment++;
+                                }
+                                else
+                                {
+                                    leverPosition_temp = segment_points[currentSegment + 1];
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                while (true)
-                {
-
-                    if (segment_points[currentSegment + 1] < leverPosition_temp)
-                    {
-                        if (currentSegment + 2 < segment_points.Length)
-                        {
-                            currentSegment++;
-                        }
-                        else
-                        {
-                            leverPosition_temp = segment_points[currentSegment + 1];
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
                 }
 
                 float nearest = 360;
@@ -280,7 +284,7 @@ namespace frou01.GrabController
                 }
                 currentNormalizePosition = (leverPosition_temp - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
 
-                if (isowner) controllerPosition = leverPosition_temp;
+                controllerPosition = leverPosition_temp;
             }
             controllerPosition_Exposed[0] = controllerPosition;
             currentSegment_Exposed[0] = currentSegment;
@@ -336,7 +340,7 @@ namespace frou01.GrabController
         public void SetPosition(float target)
         {
             controllerPosition = target;
-            CheckSegmentAndUpdate();
+            CheckSegmentAndUpdate(true);
             DataUpdateSend();
 
             controllerPosition_Exposed[0] = controllerPosition;
@@ -367,7 +371,7 @@ namespace frou01.GrabController
         {
             //Debug.Log("debug_recieved");
             this.enabled = true;
-            CheckSegmentAndUpdate();
+            CheckSegmentAndUpdate(true);
             DataUpdateSend();
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
