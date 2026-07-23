@@ -201,11 +201,7 @@ namespace frou01.GrabController
                 if (controllerPosition_Exposed[0] != prevControllerPosition)
                     controllerPosition = controllerPosition_Exposed[0];
             }
-            positionUpdated = prevControllerPosition != controllerPosition;
-            if (positionUpdated)
-            {
-                CheckSegmentAndUpdate(false);
-            }
+            CheckSegmentAndUpdate(false);
 
             DataUpdateCheckAndSend();
 
@@ -218,77 +214,81 @@ namespace frou01.GrabController
 
         private void CheckSegmentAndUpdate(bool ignoreLock)
         {
-            if (hasSegmentArray)
+            positionUpdated = prevControllerPosition != controllerPosition;
+            if (positionUpdated)
             {
-                float leverPosition_temp = controllerPosition;
-                prevNormalizePosition = currentNormalizePosition;
-
-                if (!lockedSegment || ignoreLock)
+                if (hasSegmentArray)
                 {
-                    //上探索と下探索を分離して振動=無限ループを回避
-                    if (!lockedSegment_Inc || ignoreLock)
-                        while (true)
-                        {
-                            if (segment_points[currentSegment] > leverPosition_temp)
-                            {
-                                if (currentSegment > 0)
-                                {
-                                    currentSegment--;
-                                }
-                                else
-                                {
-                                    leverPosition_temp = segment_points[currentSegment];
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    if (!lockedSegment_Dec || ignoreLock)
-                        while (true)
-                        {
-                            if (segment_points[currentSegment + 1] < leverPosition_temp)
-                            {
-                                if (currentSegment + 2 < segment_points.Length)
-                                {
-                                    currentSegment++;
-                                }
-                                else
-                                {
-                                    leverPosition_temp = segment_points[currentSegment + 1];
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                }
+                    float leverPosition_temp = controllerPosition;
+                    prevNormalizePosition = currentNormalizePosition;
 
-                float nearest = 360;
-                float currentDist;
-                foreach (float snap_point in snap_points)
-                {
-                    if (segment_points[currentSegment] < snap_point && snap_point < segment_points[currentSegment + 1])
+                    if (!lockedSegment || ignoreLock)
                     {
-                        currentDist = Mathf.Abs(wrapAngleTo180(nearest - leverPosition_temp));
-                        if (currentDist < nearest)
+                        //上探索と下探索を分離して振動=無限ループを回避
+                        if (!lockedSegment_Inc || ignoreLock)
+                            while (true)
+                            {
+                                if (segment_points[currentSegment] > leverPosition_temp)
+                                {
+                                    if (currentSegment > 0)
+                                    {
+                                        currentSegment--;
+                                    }
+                                    else
+                                    {
+                                        leverPosition_temp = segment_points[currentSegment];
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        if (!lockedSegment_Dec || ignoreLock)
+                            while (true)
+                            {
+                                if (segment_points[currentSegment + 1] < leverPosition_temp)
+                                {
+                                    if (currentSegment + 2 < segment_points.Length)
+                                    {
+                                        currentSegment++;
+                                    }
+                                    else
+                                    {
+                                        leverPosition_temp = segment_points[currentSegment + 1];
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                    }
+
+                    float nearest = 360;
+                    float currentDist;
+                    foreach (float snap_point in snap_points)
+                    {
+                        if (segment_points[currentSegment] < snap_point && snap_point < segment_points[currentSegment + 1])
                         {
-                            leverPosition_temp = snap_point;
-                            nearest = currentDist;
+                            currentDist = Mathf.Abs(wrapAngleTo180(nearest - leverPosition_temp));
+                            if (currentDist < nearest)
+                            {
+                                leverPosition_temp = snap_point;
+                                nearest = currentDist;
+                            }
                         }
                     }
-                }
-                currentNormalizePosition = (leverPosition_temp - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
+                    currentNormalizePosition = (leverPosition_temp - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
 
-                controllerPosition = leverPosition_temp;
+                    controllerPosition = leverPosition_temp;
+                }
+                controllerPosition_Exposed[0] = controllerPosition;
+                currentSegment_Exposed[0] = currentSegment;
+                currentNormalizePosition_Exposed[0] = currentNormalizePosition;
             }
-            controllerPosition_Exposed[0] = controllerPosition;
-            currentSegment_Exposed[0] = currentSegment;
-            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
         }
 
         bool AnimatorUpdate;
