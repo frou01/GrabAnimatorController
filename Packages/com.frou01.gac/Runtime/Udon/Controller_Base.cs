@@ -64,11 +64,11 @@ namespace frou01.GrabController
         protected VRCPlayerApi localPlayer;
 
 
-        [UdonSynced] public int currentSegment;
+        public int currentSegment;
         public int[] currentSegment_Exposed = new int[1];
         int prevSegment;
 
-        [UdonSynced] float currentNormalizePosition;
+        float currentNormalizePosition;
         public float[] currentNormalizePosition_Exposed = new float[1];
         float prevNormalizePosition;
 
