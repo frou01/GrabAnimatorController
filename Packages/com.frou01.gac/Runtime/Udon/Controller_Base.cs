@@ -207,7 +207,7 @@ namespace frou01.GrabController
                 CheckSegmentAndUpdate(false);
             }
 
-            DataUpdateSend();
+            DataUpdateCheckAndSend();
 
             cachedTransform.localPosition = originPos;
             transform.localRotation = originRot;
@@ -292,13 +292,9 @@ namespace frou01.GrabController
         }
 
         bool AnimatorUpdate;
-        private void DataUpdateSend()
+        private void DataUpdateCheckAndSend()
         {
             if(positionUpdated) ApplyToTransform();
-            if (currentSegment != prevSegment && UseEvent && (isowner || SendEventBySync))
-            {
-                if (SendingEvent[currentSegment] != null) foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
-            }
             if (UseAnimator)
             {
                 AnimatorUpdate = false;
@@ -326,7 +322,11 @@ namespace frou01.GrabController
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
                 }
             }
-            prevSegment = currentSegment;
+            if (currentSegment != prevSegment)
+            {
+                prevSegment = currentSegment;
+                if(UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
+            }
             prevControllerPosition = controllerPosition;
             prevNormalizePosition = currentNormalizePosition;
         }
@@ -341,7 +341,7 @@ namespace frou01.GrabController
         {
             controllerPosition = target;
             CheckSegmentAndUpdate(true);
-            DataUpdateSend();
+            DataUpdateCheckAndSend();
 
             controllerPosition_Exposed[0] = controllerPosition;
             currentSegment_Exposed[0] = currentSegment;
@@ -372,7 +372,7 @@ namespace frou01.GrabController
             //Debug.Log("debug_recieved");
             this.enabled = true;
             CheckSegmentAndUpdate(true);
-            DataUpdateSend();
+            DataUpdateCheckAndSend();
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {
