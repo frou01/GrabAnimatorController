@@ -230,61 +230,59 @@ namespace frou01.GrabController
                     float leverPosition_temp = controllerPosition;
                     prevNormalizePosition = currentNormalizePosition;
 
+                    //上探索と下探索を分離して振動=無限ループを回避
+                    while (true)
                     {
-                        //上探索と下探索を分離して振動=無限ループを回避
-                        while (true)
+                        if (segment_points[currentSegment] > leverPosition_temp)
                         {
-                            if (segment_points[currentSegment] > leverPosition_temp)
+                            if (currentSegment > 0 && (!lockedSegment && !lockedSegment_Dec || ignoreLock))
                             {
-                                if (currentSegment > 0 && (!lockedSegment && !lockedSegment_Dec || ignoreLock))
-                                {
-                                    currentSegment--;
-                                    if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
-                                        foreach (UdonBehaviour reciver in eventReceivers)
-                                        {
-                                            controllerPosition_Exposed[0] = controllerPosition;
-                                            currentSegment_Exposed[0] = currentSegment;
-                                            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
-                                            reciver.SendCustomEvent(SendingEvent[currentSegment]);
-                                        }
-                                }
-                                else
-                                {
-                                    leverPosition_temp = segment_points[currentSegment];
-                                    break;
-                                }
+                                currentSegment--;
+                                if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
+                                    foreach (UdonBehaviour reciver in eventReceivers)
+                                    {
+                                        controllerPosition_Exposed[0] = controllerPosition;
+                                        currentSegment_Exposed[0] = currentSegment;
+                                        currentNormalizePosition_Exposed[0] = currentNormalizePosition;
+                                        reciver.SendCustomEvent(SendingEvent[currentSegment]);
+                                    }
                             }
                             else
                             {
+                                leverPosition_temp = segment_points[currentSegment];
                                 break;
                             }
                         }
-                        while (true)
+                        else
                         {
-                            if (segment_points[currentSegment + 1] <= leverPosition_temp)
+                            break;
+                        }
+                    }
+                    while (true)
+                    {
+                        if (segment_points[currentSegment + 1] <= leverPosition_temp)
+                        {
+                            if (currentSegment + 2 < segment_points.Length && (!lockedSegment && !lockedSegment_Inc || ignoreLock))
                             {
-                                if (currentSegment + 2 < segment_points.Length && (!lockedSegment && !lockedSegment_Inc || ignoreLock))
-                                {
-                                    currentSegment++;
-                                    if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
-                                        foreach (UdonBehaviour reciver in eventReceivers)
-                                        {
-                                            controllerPosition_Exposed[0] = controllerPosition;
-                                            currentSegment_Exposed[0] = currentSegment;
-                                            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
-                                            reciver.SendCustomEvent(SendingEvent[currentSegment]);
-                                        }
-                                }
-                                else
-                                {
-                                    leverPosition_temp = segment_points[currentSegment + 1];
-                                    break;
-                                }
+                                currentSegment++;
+                                if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
+                                    foreach (UdonBehaviour reciver in eventReceivers)
+                                    {
+                                        controllerPosition_Exposed[0] = controllerPosition;
+                                        currentSegment_Exposed[0] = currentSegment;
+                                        currentNormalizePosition_Exposed[0] = currentNormalizePosition;
+                                        reciver.SendCustomEvent(SendingEvent[currentSegment]);
+                                    }
                             }
                             else
                             {
+                                leverPosition_temp = segment_points[currentSegment + 1];
                                 break;
                             }
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
 
@@ -350,8 +348,16 @@ namespace frou01.GrabController
 
         private void disableThis()
         {
-            if(!netWork_Updating)this.enabled = false;
+#if UNITY_EDITOR
             fromActiveTime = 0;
+            this.enabled = false;
+            Debug.Log("GAC.Unity_Editor_WorkAround. OnPreSerialization() never called");
+#endif
+            if (!netWork_Updating)
+            {
+                fromActiveTime = 0;
+                this.enabled = false;
+            }
         }
 
         public void SetPosition(float target)
@@ -359,10 +365,6 @@ namespace frou01.GrabController
             controllerPosition = target;
             CheckSegmentAndUpdate(true);
             DataUpdateCheckAndSend();
-
-            controllerPosition_Exposed[0] = controllerPosition;
-            currentSegment_Exposed[0] = currentSegment;
-            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
         }
         protected virtual void onPicked()
         {
