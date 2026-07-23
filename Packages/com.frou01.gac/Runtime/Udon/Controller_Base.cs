@@ -238,14 +238,6 @@ namespace frou01.GrabController
                             if (currentSegment > 0 && (!lockedSegment && !lockedSegment_Dec || ignoreLock))
                             {
                                 currentSegment--;
-                                if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
-                                    foreach (UdonBehaviour reciver in eventReceivers)
-                                    {
-                                        controllerPosition_Exposed[0] = controllerPosition;
-                                        currentSegment_Exposed[0] = currentSegment;
-                                        currentNormalizePosition_Exposed[0] = currentNormalizePosition;
-                                        reciver.SendCustomEvent(SendingEvent[currentSegment]);
-                                    }
                             }
                             else
                             {
