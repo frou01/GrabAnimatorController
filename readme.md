@@ -27,6 +27,10 @@ GrabAnimatorControllerはPickupを掴むことでAnimatorを制御するため�
         autoDisableTime|PickUpを降ろしてから、スクリプトが無効化されるまでの時間です[s]
         currentSegment|初期設定の区間です
         controllerPosition|初期設定の回転/移動量です。controllerTransform.localPositon/localRotationがそれぞれ0の状態からの相対値です。
+        locked|その場で操作ができないように固定します。Animatorでの制御やSetPositionからの設定は可能です
+        lockedSegment|現在のセグメントに拘束します。Animatorでの制御やSetPositionからの設定は可能です。
+        lockedSegment_Dec|セグメントを減らす方向の移動を制限します。Animatorでの制御やSetPositionからの設定は可能です。
+        lockedSegment_Inc|セグメントを増やす方向の移動を制限します。Animatorでの制御やSetPositionからの設定は可能です。
 
         仕様：
         - コントローラーの初期位置はUdon側が優先されます。
@@ -38,6 +42,8 @@ GrabAnimatorControllerはPickupを掴むことでAnimatorを制御するため�
             current---_Exposed配列の0番目データを内部の更新と同時に書き換えています。
             
             Udonにおいても配列は参照渡しが可能なため、擬似的にポインタとして扱う事が可能であり、外部から状態を監視する場合に便利です。Segmentの更新に対応してイベントを発出できますから、これを用いてイベント実行も可能になっています。
+        - SetPosition
+            Positionを指定の値に強制設定できる関数です。従属するSegment他も移動します。
             
 
 - コントローラーの種別
