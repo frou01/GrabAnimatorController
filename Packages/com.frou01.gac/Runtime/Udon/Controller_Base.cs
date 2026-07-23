@@ -85,7 +85,6 @@ namespace frou01.GrabController
         private float SyncInterval = 10;
         private float SinceLastRequest;
 
-        bool Local_isUpdated;
         bool isowner;
         bool positionUpdated;
         bool hasSegmentArray;
@@ -202,90 +201,66 @@ namespace frou01.GrabController
                     controllerPosition = controllerPosition_Exposed[0];
             }
             positionUpdated = prevControllerPosition != controllerPosition;
-            if (positionUpdated || currentSegment != prevSegment)
+            if (positionUpdated)
             {
-                SegmentUpdate();
-                prevSegment = currentSegment;
-                ApplyToTransform();
+                CheckSegmentAndUpdate();
             }
-            Local_isUpdated |= positionUpdated = prevControllerPosition != controllerPosition;
 
-            if (UseAnimator)
-            {
-                if (!isAnimatorControllPosition && positionUpdated && hasPosition)
-                {
-                    TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
-                }
-                if (Local_isUpdated && !TargetAnimator.enabled)
-                {
-                    Local_isUpdated = false;
-                    TargetAnimator.enabled = true;
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
-                    if (hasNormalizedPosition)
-                    {
-                        TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                    }
-                    if (hasSegments)
-                    {
-                        TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
-                    }
-                    if (hasPosition && !isAnimatorControllPosition)
-                    {
-                        TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
-                    }
-                }
-            }
-            prevControllerPosition = controllerPosition;
+            DataUpdateSend();
+
             cachedTransform.localPosition = originPos;
             transform.localRotation = originRot;
-
-            controllerPosition_Exposed[0] = controllerPosition;
-            currentSegment_Exposed[0] = currentSegment;
-            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
 
             if ((!isPicked || !isowner) && autoDisable) fromActiveTime += Time.deltaTime;
             if (autoDisable && !isPicked && fromActiveTime > autoDisableTime) disableThis();
         }
 
-        private void SegmentUpdate()
+        private void CheckSegmentAndUpdate()
         {
             if (hasSegmentArray)
             {
                 float leverPosition_temp = controllerPosition;
                 prevNormalizePosition = currentNormalizePosition;
-                if (segment_points[currentSegment] > leverPosition_temp)
+
+                //上探索と下探索を分離して振動=無限ループを回避
+                while (true)
                 {
-                    if (isowner)
+                    if (segment_points[currentSegment] > leverPosition_temp)
                     {
-                        if (currentSegment > 0 && !lockedSegment && !lockedSegment_Dec)
+                        if (currentSegment > 0)
                         {
                             currentSegment--;
                         }
                         else
                         {
                             leverPosition_temp = segment_points[currentSegment];
+                            break;
                         }
                     }
-                    if (isPicked && useHaptic) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
-                }
-                if (segment_points[currentSegment + 1] < leverPosition_temp)
-                {
-                    if (isowner)
+                    else
                     {
-                        if (currentSegment + 2 < segment_points.Length && !lockedSegment && !lockedSegment_Inc)
+                        break;
+                    }
+                }
+                while (true)
+                {
+
+                    if (segment_points[currentSegment + 1] < leverPosition_temp)
+                    {
+                        if (currentSegment + 2 < segment_points.Length)
                         {
                             currentSegment++;
                         }
                         else
                         {
                             leverPosition_temp = segment_points[currentSegment + 1];
+                            break;
                         }
                     }
-                    if (isPicked && useHaptic) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
+                    else
+                    {
+                        break;
+                    }
                 }
 
                 float nearest = 360;
@@ -302,30 +277,55 @@ namespace frou01.GrabController
                         }
                     }
                 }
-                if (currentSegment != prevSegment && UseEvent)
-                {
-                    if (SendingEvent[currentSegment] != null) foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
-                }
                 currentNormalizePosition = (leverPosition_temp - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
 
-                if (UseAnimator)
-                {
-                    if (currentNormalizePosition != prevNormalizePosition && hasNormalizedPosition)
-                    {
-                        TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                        Local_isUpdated = true;
-                    }
-                    if (currentSegment != prevSegment && hasSegments)
-                    {
-                        TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
-                        Local_isUpdated = true;
-                    }
-                }
                 if (isowner) controllerPosition = leverPosition_temp;
             }
+            controllerPosition_Exposed[0] = controllerPosition;
+            currentSegment_Exposed[0] = currentSegment;
+            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
         }
+
+        bool AnimatorUpdate;
+        private void DataUpdateSend()
+        {
+            if(positionUpdated) ApplyToTransform();
+            if (currentSegment != prevSegment && UseEvent)
+            {
+                if (SendingEvent[currentSegment] != null) foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
+            }
+            if (UseAnimator)
+            {
+                AnimatorUpdate = false;
+                if (hasPosition && !isAnimatorControllPosition)
+                {
+                    TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
+                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
+                    AnimatorUpdate = true;
+                }
+                if (currentNormalizePosition != prevNormalizePosition && hasNormalizedPosition)
+                {
+                    TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
+                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
+                    AnimatorUpdate = true;
+                }
+                if (currentSegment != prevSegment && hasSegments)
+                {
+                    TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
+                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
+                    AnimatorUpdate = true;
+                }
+                if (AnimatorUpdate && !TargetAnimator.enabled)
+                {
+                    TargetAnimator.enabled = true;
+                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
+                }
+            }
+            prevSegment = currentSegment;
+            prevControllerPosition = controllerPosition;
+            prevNormalizePosition = currentNormalizePosition;
+        }
+
         private void disableThis()
         {
             this.enabled = false;
@@ -335,74 +335,8 @@ namespace frou01.GrabController
         public void SetPosition(float target)
         {
             controllerPosition = target;
-            if (hasSegmentArray)
-            {
-                prevNormalizePosition = currentNormalizePosition;
-                while (true)
-                {
-                    if (segment_points[currentSegment] > controllerPosition)
-                    {
-                        if (currentSegment > 0)
-                        {
-                            currentSegment--;
-                        }
-                        else
-                        {
-                            controllerPosition = segment_points[currentSegment];
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                while (true)
-                {
-
-                    if (segment_points[currentSegment + 1] < controllerPosition)
-                    {
-                        if (currentSegment + 2 < segment_points.Length)
-                        {
-                            currentSegment++;
-                        }
-                        else
-                        {
-                            controllerPosition = segment_points[currentSegment + 1];
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                //上探索と下探索を分離して振動=無限ループを回避
-
-                currentNormalizePosition = (controllerPosition - segment_points[currentSegment]) / (segment_points[currentSegment + 1] - segment_points[currentSegment]);
-                if (UseAnimator)
-                {
-                    if (hasNormalizedPosition)
-                    {
-                        TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                        Local_isUpdated = true;
-                    }
-                    if (hasSegments)
-                    {
-                        TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
-                        foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
-                        Local_isUpdated = true;
-                    }
-                }
-            }
-
-            if (UseAnimator && !isAnimatorControllPosition && hasPosition)
-            {
-                TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
-                foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
-            }
-            ApplyToTransform();
+            CheckSegmentAndUpdate();
+            DataUpdateSend();
 
             controllerPosition_Exposed[0] = controllerPosition;
             currentSegment_Exposed[0] = currentSegment;
@@ -432,26 +366,8 @@ namespace frou01.GrabController
         {
             //Debug.Log("debug_recieved");
             this.enabled = true;
-            if (UseAnimator)
-            {
-                TargetAnimator.enabled = true;
-                if (hasNormalizedPosition)
-                {
-                    TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
-                }
-                if (hasSegments)
-                {
-                    TargetAnimator.SetInteger(segmentsParamaterID, currentSegment);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
-                }
-                if (hasPosition && !isAnimatorControllPosition)
-                {
-                    TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
-                }
-            }
-            ApplyToTransform();
+            CheckSegmentAndUpdate();
+            DataUpdateSend();
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {
