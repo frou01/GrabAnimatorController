@@ -9,7 +9,7 @@ namespace frou01.GrabController
 {
     public class ControllerLever_Pickup : Controller_Base
     {
-
+        float pickupCalcPos;
         protected override void onPicked()
         {
             netWork_Updating = true;
@@ -35,20 +35,19 @@ namespace frou01.GrabController
             {
                 localHandPosition_OnPick = localHandPosition;
                 localHandRotation_OnPick = localHandRotation;
-                position_OnPick = controllerPosition;
+                pickupCalcPos = position_OnPick = controllerPosition;
                 onPick = false;
             }
             positionSet(localHandPosition_OnPick, localHandPosition);
         }
         private void positionSet(Vector3 a, Vector3 b)
         {
-            controllerPosition = position_OnPick + Mathf.Atan2(a.z * b.x - a.x * b.z, a.x * b.x + a.z * b.z) * Mathf.Rad2Deg;
+            controllerPosition = pickupCalcPos += wrapAngleTo180(position_OnPick + Mathf.Atan2(a.z * b.x - a.x * b.z, a.x * b.x + a.z * b.z) * Mathf.Rad2Deg - pickupCalcPos);
         }
         protected override void ApplyToTransform()
         {
-            controllerPosition = wrapAngleTo180(controllerPosition);
             controllerTransform.localRotation = Quaternion.identity;
-            controllerTransform.Rotate(0, controllerPosition, 0);
+            controllerTransform.Rotate(0, wrapAngleTo180(controllerPosition), 0);
         }
 
 #if !COMPILER_UDONSHARP

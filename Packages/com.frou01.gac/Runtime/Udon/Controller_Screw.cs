@@ -1,4 +1,5 @@
 ﻿
+using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
@@ -6,6 +7,7 @@ using VRC.Udon;
 
 namespace frou01.GrabController
 {
+    [Obsolete]
     public class Controller_Screw : UdonSharpBehaviour
     {
         [Header("レバーに使っているオブジェクトと同じ物にアタッチして使います")]
@@ -75,21 +77,8 @@ namespace frou01.GrabController
                 if (hasHandlePrm && !isAnimatorControllHandlePrm) TargetAnimator.SetFloat(HandleParamaterID, wrapedRotation);
             }
 
-            if (screwRotation == MAX)
-            {
-                BaseControllerSegment_points[0] = -360;
-                BaseControllerSegment_points[1] = wrapedRotation;
-            }
-            else if (screwRotation == min)
-            {
-                BaseControllerSegment_points[0] = wrapedRotation;
-                BaseControllerSegment_points[1] = 360;
-            }
-            else
-            {
-                BaseControllerSegment_points[0] = -360;
-                BaseControllerSegment_points[1] = 360;
-            }
+            BaseControllerSegment_points[0] = min;
+            BaseControllerSegment_points[1] = MAX;
             limted = true;
 
         }
@@ -144,33 +133,6 @@ namespace frou01.GrabController
                     {
                         if (hasNormalizedPosition) TargetAnimator.SetFloat(ScrewParamaterID, normScrewPosition[0]);
                         if (hasHandlePrm && !isAnimatorControllHandlePrm) TargetAnimator.SetFloat(HandleParamaterID, wrapedRotation);
-                    }
-
-                    if (currentLeverRotation != wrapedRotation)
-                    {
-                        BaseControllerRotation[0] = wrapedRotation;
-                        BaseController.enabled = true;
-                        if (screwRotation == MAX)
-                        {
-                            BaseControllerSegment_points[0] = -360;
-                            BaseControllerSegment_points[1] = wrapedRotation;
-                        }
-                        else if (screwRotation == min)
-                        {
-                            BaseControllerSegment_points[0] = wrapedRotation;
-                            BaseControllerSegment_points[1] = 360;
-                        }
-                        else
-                        {
-                            BaseControllerSegment_points[0] = -360;
-                            BaseControllerSegment_points[1] = 360;
-                        }
-                        limted = true;
-                    }
-                    else if (limted)
-                    {
-                        BaseControllerSegment_points[0] = -360;
-                        BaseControllerSegment_points[1] = 360;
                     }
 
                     controllerTransform.localRotation = Quaternion.identity;
