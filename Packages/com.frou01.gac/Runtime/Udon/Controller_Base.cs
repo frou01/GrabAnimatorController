@@ -92,10 +92,10 @@ namespace frou01.GrabController
         bool hasSegmentArray;
         protected VRCPlayerApi.TrackingData trackingData;
 
-        [System.NonSerialized] public bool locked = false;
-        [System.NonSerialized] public bool lockedSegment = false;
-        [System.NonSerialized] public bool lockedSegment_Dec = false;
-        [System.NonSerialized] public bool lockedSegment_Inc = false;
+        public bool locked = false;
+        public bool lockedSegment = false;
+        public bool lockedSegment_Dec = false;
+        public bool lockedSegment_Inc = false;
 
         protected virtual void Start()
         {
@@ -226,52 +226,66 @@ namespace frou01.GrabController
             {
                 if (hasSegmentArray)
                 {
+                    controllerPosition_Exposed[0] = controllerPosition;
                     float leverPosition_temp = controllerPosition;
                     prevNormalizePosition = currentNormalizePosition;
 
-                    if (!lockedSegment || ignoreLock)
                     {
                         //上探索と下探索を分離して振動=無限ループを回避
-                        if (!lockedSegment_Inc || ignoreLock)
-                            while (true)
+                        while (true)
+                        {
+                            if (segment_points[currentSegment] > leverPosition_temp)
                             {
-                                if (segment_points[currentSegment] > leverPosition_temp)
+                                if (currentSegment > 0 && (!lockedSegment && !lockedSegment_Dec || ignoreLock))
                                 {
-                                    if (currentSegment > 0)
-                                    {
-                                        currentSegment--;
-                                    }
-                                    else
-                                    {
-                                        leverPosition_temp = segment_points[currentSegment];
-                                        break;
-                                    }
+                                    currentSegment--;
+                                    if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
+                                        foreach (UdonBehaviour reciver in eventReceivers)
+                                        {
+                                            controllerPosition_Exposed[0] = controllerPosition;
+                                            currentSegment_Exposed[0] = currentSegment;
+                                            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
+                                            reciver.SendCustomEvent(SendingEvent[currentSegment]);
+                                        }
                                 }
                                 else
                                 {
+                                    leverPosition_temp = segment_points[currentSegment];
                                     break;
                                 }
                             }
-                        if (!lockedSegment_Dec || ignoreLock)
-                            while (true)
+                            else
                             {
-                                if (segment_points[currentSegment + 1] < leverPosition_temp)
+                                break;
+                            }
+                        }
+                        while (true)
+                        {
+                            if (segment_points[currentSegment + 1] <= leverPosition_temp)
+                            {
+                                if (currentSegment + 2 < segment_points.Length && (!lockedSegment && !lockedSegment_Inc || ignoreLock))
                                 {
-                                    if (currentSegment + 2 < segment_points.Length)
-                                    {
-                                        currentSegment++;
-                                    }
-                                    else
-                                    {
-                                        leverPosition_temp = segment_points[currentSegment + 1];
-                                        break;
-                                    }
+                                    currentSegment++;
+                                    if (UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)
+                                        foreach (UdonBehaviour reciver in eventReceivers)
+                                        {
+                                            controllerPosition_Exposed[0] = controllerPosition;
+                                            currentSegment_Exposed[0] = currentSegment;
+                                            currentNormalizePosition_Exposed[0] = currentNormalizePosition;
+                                            reciver.SendCustomEvent(SendingEvent[currentSegment]);
+                                        }
                                 }
                                 else
                                 {
+                                    leverPosition_temp = segment_points[currentSegment + 1];
                                     break;
                                 }
                             }
+                            else
+                            {
+                                break;
+                            }
+                        }
                     }
 
                     float nearest = 360;
@@ -329,11 +343,7 @@ namespace frou01.GrabController
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
                 }
             }
-            if (currentSegment != prevSegment)
-            {
-                prevSegment = currentSegment;
-                if(UseEvent && (isowner || SendEventBySync) && SendingEvent[currentSegment] != null)foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
-            }
+            prevSegment = currentSegment;
             prevControllerPosition = controllerPosition;
             prevNormalizePosition = currentNormalizePosition;
         }
