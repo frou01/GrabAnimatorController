@@ -32,6 +32,7 @@ namespace frou01.GrabController
         [SerializeField] bool UseEvent = false;
         [Tooltip("set event per every segment")] public string[] SendingEvent;
         [SerializeField] UdonBehaviour[] eventReceivers;
+        [SerializeField] bool SendEventBySync = false;
 
         public bool useHaptic;
 
@@ -290,7 +291,7 @@ namespace frou01.GrabController
         private void DataUpdateSend()
         {
             if(positionUpdated) ApplyToTransform();
-            if (currentSegment != prevSegment && UseEvent)
+            if (currentSegment != prevSegment && UseEvent && (isowner || SendEventBySync))
             {
                 if (SendingEvent[currentSegment] != null) foreach (UdonBehaviour reciver in eventReceivers) reciver.SendCustomEvent(SendingEvent[currentSegment]);
             }
