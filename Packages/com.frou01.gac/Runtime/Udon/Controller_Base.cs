@@ -115,10 +115,6 @@ namespace frou01.GrabController
                 hasNormalizedPosition = HasParameter(normalizedPositionParamaterID, TargetAnimator);
                 hasSegments = HasParameter(segmentsParamaterID, TargetAnimator);
                 isAnimatorControllPosition = TargetAnimator.IsParameterControlledByCurve(positionParamaterID);
-                if (hasPosition && controllerPosition != TargetAnimator.GetFloat(positionParamaterID))
-                {
-                    controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
-                }
             }
 
             hasSegmentArray = segment_points.Length >= 2;
