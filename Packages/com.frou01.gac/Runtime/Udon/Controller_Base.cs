@@ -235,9 +235,9 @@ namespace frou01.GrabController
                     {
                         if (segment_points[currentSegment] > leverPosition_temp)
                         {
+                            if (isPicked && useHaptic && isowner) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
                             if (currentSegment > 0 && (!lockedSegment && !lockedSegment_Dec || ignoreLock))
                             {
-                                if (isPicked && useHaptic) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
                                 currentSegment--;
                             }
                             else
@@ -256,6 +256,7 @@ namespace frou01.GrabController
                     {
                         if (segment_points[currentSegment + 1] <= leverPosition_temp)
                         {
+                            if (isPicked && useHaptic && isowner) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
                             if (currentSegment + 2 < segment_points.Length && (!lockedSegment && !lockedSegment_Inc || ignoreLock))
                             {
                                 if (isPicked && useHaptic) localPlayer.PlayHapticEventInHand(pickup.currentHand, 0.1f, 1f, 0.5f);
