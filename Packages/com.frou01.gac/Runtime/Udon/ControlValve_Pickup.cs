@@ -8,6 +8,7 @@ namespace frou01.GrabController
 {
     public class ControlValve_Pickup : Controller_Base
     {
+        float pickupCalcPos;
         protected override void onPicked()
         {
             netWork_Updating = true;
@@ -28,20 +29,19 @@ namespace frou01.GrabController
             if (onPick)
             {
                 localHandRotation_OnPick = localHandRotation;
-                position_OnPick = controllerPosition;
+                pickupCalcPos = position_OnPick = controllerPosition;
                 onPick = false;
             }
             positionSet(localHandRotation_OnPick, localHandRotation);
         }
         private void positionSet(Quaternion a, Quaternion b)
         {
-            controllerPosition = wrapAngleTo180(position_OnPick + (b.eulerAngles.y - a.eulerAngles.y));
+            controllerPosition = pickupCalcPos += wrapAngleTo180(position_OnPick + (b.eulerAngles.y - a.eulerAngles.y) - pickupCalcPos);
         }
         protected override void ApplyToTransform()
         {
-            controllerPosition = wrapAngleTo180(controllerPosition);
             controllerTransform.localRotation = Quaternion.identity;
-            controllerTransform.Rotate(0, controllerPosition, 0);
+            controllerTransform.Rotate(0, wrapAngleTo180(controllerPosition), 0);
         }
 #if !COMPILER_UDONSHARP
         protected override void OnDrawGizmosSelected()
