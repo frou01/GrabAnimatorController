@@ -19,7 +19,7 @@ GrabAnimatorControllerはPickupを掴むことでAnimatorを制御するため�
         TargetAnimator|制御の対象になるAnimatorです。
         MultiTargetAnimators|追加の制御対象Animatorです。TargetAnimatorは別途入れないと使用できません。
         paramaterName|パラメーター名を指定します。<br>(設定名)_segment[integer]、(設定名)_normpos[float]、(設定名)_position[float]の三種類を用います。
-        segment_points|パラメーターの区切り値です。デジタルな制御を行う場合に便利です。<br>２値は必須で、最大と最小が操作の制限値になります。回転のコントローラーは±180度以上をサポートしていません。
+        segment_points|パラメーターの区切り値です。デジタルな制御を行う場合に便利です。<br>２値は必須で、最大と最小が操作の制限値になります。回転コントローラーについては180度以上を設定すると一回転以上の挙動になります。
         snap_points|スナップ値です。segment_pointsで区間を複数設けた場合、同じ区間内のみスナップします。
         useHaptic|segment_pointsで設定した区切り値をまたぐ際にVRコントローラーを振動させるかを設定します。
         autoDisable|自動でスクリプト無効化(Update処理停止)を行うかどうかを設定します。
@@ -56,10 +56,10 @@ GrabAnimatorControllerはPickupを掴むことでAnimatorを制御するため�
     ControlSlider_Prefab|PickUp位置|Y軸移動
 
 - Controller_Screw
-
-    Lever/Valve/Valeverの三種について、一回転以上に対応させるためのスクリプトです。
-
+    通常コントローラーが一回転以上をサポートしたため非推奨になりました。
+    <details>
     <summary>設定値/仕様</summary>
+    Lever/Valve/Valeverの三種について、一回転以上に対応させるためのスクリプトです。
 
     |設定値|概要|
     |---:|:---|
@@ -70,3 +70,4 @@ GrabAnimatorControllerはPickupを掴むことでAnimatorを制御するため�
     screwRotation|デバッグ用です。
     min|回転最小量です（初期位置は0）
     MAX|回転最大量です（初期位置は0）
+    </details>
