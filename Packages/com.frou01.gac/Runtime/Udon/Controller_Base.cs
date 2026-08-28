@@ -66,11 +66,11 @@ namespace frou01.GrabController
 
         [UdonSynced] public int currentSegment;
         public int[] currentSegment_Exposed = new int[1];
-        int prevSegment;
+        int prevSegment = -1;
 
         float currentNormalizePosition;
         public float[] currentNormalizePosition_Exposed = new float[1];
-        float prevNormalizePosition;
+        float prevNormalizePosition = -1;
 
         float SyncedControllerPosition;
 
@@ -78,7 +78,7 @@ namespace frou01.GrabController
         [Header("デバッグ時はアニメーターの(設定名)_rotationを変更することで確認できます")]
         [UdonSynced(UdonSyncMode.Linear)] public float controllerPosition;
         public float[] controllerPosition_Exposed = new float[1];
-        float prevControllerPosition;
+        float prevControllerPosition = float.NaN;
 
         private bool isAnimatorControllPosition;
 
@@ -307,16 +307,16 @@ namespace frou01.GrabController
             if (UseAnimator)
             {
                 AnimatorUpdate = false;
-                if (hasPosition && !isAnimatorControllPosition)
-                {
-                    TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
-                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
-                    AnimatorUpdate = true;
-                }
                 if (currentNormalizePosition != prevNormalizePosition && hasNormalizedPosition)
                 {
                     TargetAnimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(normalizedPositionParamaterID, currentNormalizePosition);
+                    AnimatorUpdate = true;
+                }
+                if (hasPosition && !isAnimatorControllPosition)
+                {
+                    TargetAnimator.SetFloat(positionParamaterID, controllerPosition);
+                    foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetFloat(positionParamaterID, controllerPosition);
                     AnimatorUpdate = true;
                 }
                 if (currentSegment != prevSegment && hasSegments)
