@@ -171,11 +171,6 @@ namespace frou01.GrabController
 
         public override void OnPickup()
         {
-            if (limted)
-            {
-                BaseControllerSegment_points[0] = -360;
-                BaseControllerSegment_points[1] = 360;
-            }
         }
         public override void Interact()
         {
