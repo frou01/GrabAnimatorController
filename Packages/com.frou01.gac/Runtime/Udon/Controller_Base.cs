@@ -172,19 +172,23 @@ namespace frou01.GrabController
                 {
                     netWork_Updating = true;
                 }
-                if (prevControllerPosition != controllerPosition)
+                if (float.IsNaN(prevControllerPosition))//Check started;
                 {
-                    netWork_Updating = true;
-                }
-                if (UseAnimator)
-                {
-                    if (hasPosition && controllerPosition != TargetAnimator.GetFloat(positionParamaterID))
+                    //Fetch position
+                    if (UseAnimator)
                     {
-                        controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
+                        if (hasPosition && controllerPosition != TargetAnimator.GetFloat(positionParamaterID))
+                        {
+                            controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
+                        }
+                    }
+                    if (controllerPosition_Exposed[0] != prevControllerPosition)
+                        controllerPosition = controllerPosition_Exposed[0];
+                    if (prevControllerPosition != controllerPosition)
+                    {
+                        netWork_Updating = true;
                     }
                 }
-                if (controllerPosition_Exposed[0] != prevControllerPosition)
-                    controllerPosition = controllerPosition_Exposed[0];
                 if (netWork_Updating) SinceLastRequest += Time.deltaTime;
                 if (SinceLastRequest > SyncInterval)
                 {
