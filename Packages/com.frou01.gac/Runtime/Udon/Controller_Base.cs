@@ -172,7 +172,7 @@ namespace frou01.GrabController
                 {
                     netWork_Updating = true;
                 }
-                if (float.IsNaN(prevControllerPosition))//Check started;
+                if (!float.IsNaN(prevControllerPosition))//Check started;
                 {
                     //Fetch position
                     if (UseAnimator)
