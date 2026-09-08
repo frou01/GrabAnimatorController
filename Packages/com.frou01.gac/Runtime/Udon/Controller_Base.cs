@@ -329,9 +329,9 @@ namespace frou01.GrabController
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
                     AnimatorUpdate = true;
                 }
-                if (AnimatorUpdate && !TargetAnimator.enabled)
+                if (AnimatorUpdate)
                 {
-                    TargetAnimator.enabled = true;
+                    if(!TargetAnimator.enabled) TargetAnimator.enabled = true;
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
                 }
             }
