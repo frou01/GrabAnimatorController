@@ -97,6 +97,8 @@ namespace frou01.GrabController
         public bool lockedSegment_Dec = false;
         public bool lockedSegment_Inc = false;
 
+        public bool logging = false;
+
         protected virtual void Start()
         {
             cachedTransform = transform;
@@ -119,12 +121,27 @@ namespace frou01.GrabController
             }
 
             hasSegmentArray = segment_points.Length >= 2;
+            if (logging)
+            {
+                Debug.Log("pre  " + nameof(controllerPosition)+ ":" + controllerPosition, this);
+                if (hasPosition) Debug.Log("pre AnimatorPos :" + TargetAnimator.GetFloat(positionParamaterID), this);
+                if (hasNormalizedPosition) Debug.Log("pre AnimatorNorm:" + TargetAnimator.GetFloat(normalizedPositionParamaterID), this);
+            }
             SetPosition(controllerPosition);
+
+            if (UseAnimator && isAnimatorControllPosition)
+            {
+                TargetAnimator.Update(1);
+            }
+            if (logging)
+            {
+                Debug.Log("post " + nameof(controllerPosition) + ":" + controllerPosition, this);
+                if(hasPosition)Debug.Log("post AnimatorPos:" + TargetAnimator.GetFloat(positionParamaterID), this);
+                if (hasNormalizedPosition) Debug.Log("post AnimatorNorm:" + TargetAnimator.GetFloat(normalizedPositionParamaterID), this);
+            }
+
             autoDisable &= ForceAutoDisable || !isAnimatorControllPosition;
             if (autoDisable) disableThis();
-            prevSegment = currentSegment;
-            prevControllerPosition = controllerPosition;
-            prevNormalizePosition = currentNormalizePosition;
             if (!NoneSyncMode)
             {
                 isowner = Networking.IsOwner(gameObject);
@@ -232,7 +249,6 @@ namespace frou01.GrabController
                 {
                     controllerPosition_Exposed[0] = controllerPosition;
                     float leverPosition_temp = controllerPosition;
-                    prevNormalizePosition = currentNormalizePosition;
 
                     //上探索と下探索を分離して振動=無限ループを回避
                     while (!onSync)
