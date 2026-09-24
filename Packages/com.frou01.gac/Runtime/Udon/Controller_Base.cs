@@ -50,7 +50,7 @@ namespace frou01.GrabController
 
 
         protected bool onPick;
-        [UdonSynced] bool isPicked;
+        [UdonSynced] protected bool isPicked;
         protected VRC_Pickup pickup;
 
         protected Vector3 originPos;
