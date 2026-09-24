@@ -64,12 +64,13 @@ MonoBehaviour:
   MultiTargetAnimators: []
   paramaterName: 
   segment_points:
-  - -90
-  - 90
+  - 0
+  - 1
   snap_points: []
   UseEvent: 0
   SendingEvent: []
   eventReceivers: []
+  SendEventBySync: 0
   useHaptic: 0
   autoDisable: 1
   ForceAutoDisable: 0
@@ -81,6 +82,12 @@ MonoBehaviour:
   controllerPosition: 0
   controllerPosition_Exposed:
   - 0
+  NoneSyncMode: 0
+  locked: 0
+  lockedSegment: 0
+  lockedSegment_Dec: 0
+  lockedSegment_Inc: 0
+  logging: 0
 --- !u!114 &2641284816967498784
 MonoBehaviour:
   m_ObjectHideFlags: 0
