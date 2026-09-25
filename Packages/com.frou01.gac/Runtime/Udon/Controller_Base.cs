@@ -50,7 +50,7 @@ namespace frou01.GrabController
 
 
         protected bool onPick;
-        [UdonSynced] bool isPicked;
+        [UdonSynced] protected bool isPicked;
         protected VRC_Pickup pickup;
 
         protected Vector3 originPos;
@@ -97,6 +97,8 @@ namespace frou01.GrabController
         public bool lockedSegment_Dec = false;
         public bool lockedSegment_Inc = false;
 
+        public bool logging = false;
+
         protected virtual void Start()
         {
             cachedTransform = transform;
@@ -115,16 +117,31 @@ namespace frou01.GrabController
                 hasPosition = HasParameter(positionParamaterID, TargetAnimator);
                 hasNormalizedPosition = HasParameter(normalizedPositionParamaterID, TargetAnimator);
                 hasSegments = HasParameter(segmentsParamaterID, TargetAnimator);
-                isAnimatorControllPosition = TargetAnimator.IsParameterControlledByCurve(positionParamaterID);
+                if(hasPosition) isAnimatorControllPosition = TargetAnimator.IsParameterControlledByCurve(positionParamaterID);
             }
 
             hasSegmentArray = segment_points.Length >= 2;
+            if (logging)
+            {
+                Debug.Log("pre  " + nameof(controllerPosition)+ ":" + controllerPosition, this);
+                if (hasPosition) Debug.Log("pre AnimatorPos :" + TargetAnimator.GetFloat(positionParamaterID), this);
+                if (hasNormalizedPosition) Debug.Log("pre AnimatorNorm:" + TargetAnimator.GetFloat(normalizedPositionParamaterID), this);
+            }
             SetPosition(controllerPosition);
+
+            if (UseAnimator && isAnimatorControllPosition)
+            {
+                TargetAnimator.Update(1);
+            }
+            if (logging)
+            {
+                Debug.Log("post " + nameof(controllerPosition) + ":" + controllerPosition, this);
+                if(hasPosition)Debug.Log("post AnimatorPos:" + TargetAnimator.GetFloat(positionParamaterID), this);
+                if (hasNormalizedPosition) Debug.Log("post AnimatorNorm:" + TargetAnimator.GetFloat(normalizedPositionParamaterID), this);
+            }
+
             autoDisable &= ForceAutoDisable || !isAnimatorControllPosition;
             if (autoDisable) disableThis();
-            prevSegment = currentSegment;
-            prevControllerPosition = controllerPosition;
-            prevNormalizePosition = currentNormalizePosition;
             if (!NoneSyncMode)
             {
                 isowner = Networking.IsOwner(gameObject);
@@ -172,19 +189,23 @@ namespace frou01.GrabController
                 {
                     netWork_Updating = true;
                 }
-                if (prevControllerPosition != controllerPosition)
+                if (!float.IsNaN(prevControllerPosition))//Check started;
                 {
-                    netWork_Updating = true;
-                }
-                if (UseAnimator)
-                {
-                    if (hasPosition && controllerPosition != TargetAnimator.GetFloat(positionParamaterID))
+                    //Fetch position
+                    if (UseAnimator)
                     {
-                        controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
+                        if (hasPosition && controllerPosition != TargetAnimator.GetFloat(positionParamaterID))
+                        {
+                            controllerPosition = TargetAnimator.GetFloat(positionParamaterID);
+                        }
+                    }
+                    if (controllerPosition_Exposed[0] != prevControllerPosition)
+                        controllerPosition = controllerPosition_Exposed[0];
+                    if (prevControllerPosition != controllerPosition)
+                    {
+                        netWork_Updating = true;
                     }
                 }
-                if (controllerPosition_Exposed[0] != prevControllerPosition)
-                    controllerPosition = controllerPosition_Exposed[0];
                 if (netWork_Updating) SinceLastRequest += Time.deltaTime;
                 if (SinceLastRequest > SyncInterval)
                 {
@@ -228,7 +249,6 @@ namespace frou01.GrabController
                 {
                     controllerPosition_Exposed[0] = controllerPosition;
                     float leverPosition_temp = controllerPosition;
-                    prevNormalizePosition = currentNormalizePosition;
 
                     //上探索と下探索を分離して振動=無限ループを回避
                     while (!onSync)
@@ -325,9 +345,9 @@ namespace frou01.GrabController
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.SetInteger(segmentsParamaterID, currentSegment);
                     AnimatorUpdate = true;
                 }
-                if (AnimatorUpdate && !TargetAnimator.enabled)
+                if (AnimatorUpdate)
                 {
-                    TargetAnimator.enabled = true;
+                    if(!TargetAnimator.enabled) TargetAnimator.enabled = true;
                     foreach (Animator Ananimator in MultiTargetAnimators) Ananimator.enabled = true;
                 }
             }

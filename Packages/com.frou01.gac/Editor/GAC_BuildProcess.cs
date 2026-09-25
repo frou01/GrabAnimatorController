@@ -28,8 +28,8 @@ public class GAC_BuildProcess : IProcessSceneWithReport
                         FieldInfo memberinfo = type.GetField("serializedProgramAsset",
                             BindingFlags.NonPublic | BindingFlags.Instance);
 
-                        IUdonProgram _program = ((AbstractSerializedUdonProgramAsset)memberinfo.GetValue(udon)).RetrieveProgram();
-                        if (_program.SyncMetadataTable != null)
+                        IUdonProgram _program = ((AbstractSerializedUdonProgramAsset)memberinfo.GetValue(udon))?.RetrieveProgram();
+                        if (_program != null && _program.SyncMetadataTable != null)
                         {
                             IEnumerable<IUdonSyncMetadata> SyncMetadatas = _program.SyncMetadataTable.GetAllSyncMetadata();
                             foreach (IUdonSyncMetadata metas in SyncMetadatas)
