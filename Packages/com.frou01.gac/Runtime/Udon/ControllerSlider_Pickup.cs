@@ -10,7 +10,6 @@ namespace frou01.GrabController
     {
         protected override void onPicked()
         {
-            netWork_Updating = true;
             if (pickup.currentHand == VRC_Pickup.PickupHand.Left)
             {
                 trackingData = localPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.LeftHand);
@@ -29,6 +28,19 @@ namespace frou01.GrabController
             if (onPick)
             {
                 Debug.Log(pickup.currentHand);
+                if (pickup.currentHand == VRC_Pickup.PickupHand.Left)
+                {
+                    trackingData = localPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.LeftHand);
+                }
+                else
+                if (pickup.currentHand == VRC_Pickup.PickupHand.Right)
+                {
+                    trackingData = localPlayer.GetTrackingData(VRCPlayerApi.TrackingDataType.RightHand);
+                }
+                else
+                {
+                    return;
+                }
                 localHandPosition_OnPick = localHandPosition;
                 position_OnPick = controllerPosition;
                 onPick = false;
@@ -41,8 +53,7 @@ namespace frou01.GrabController
         }
         protected override void ApplyToTransform()
         {
-            controllerTransform.localPosition = Vector3.zero;
-            controllerTransform.Translate(0, controllerPosition, 0);
+            controllerTransform.Translate(0, controllerPosition - controllerTransform.localPosition.y , 0);
         }
 
 #if !COMPILER_UDONSHARP
